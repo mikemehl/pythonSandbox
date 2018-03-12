@@ -1,17 +1,21 @@
 import socket
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-port = 8967
 
-s.bind(('127.0.0.1', port))
+try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        port = 8967
 
-s.listen(5)
-print("Listening on port " + str(port) + ".")
+        s.bind(('', port))
 
-c, addr = s.accept()
+        s.listen(5)
+        print("Listening on port " + str(port) + ".")
 
-print("Connected from " + str(addr) + ".")
+        c, addr = s.accept()
 
-c.send(bytes('Hey whats up?', 'utf-8'))
+        print("Connected from " + str(addr) + ".")
 
-c.close()
+        c.send(bytes('Hey whats up?', 'utf-8'))
+
+        c.close()
+except:
+        print("Server dun goofed.")
