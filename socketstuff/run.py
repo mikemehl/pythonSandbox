@@ -1,12 +1,13 @@
 import os
-import socket
 import time
+import socket
 import multiprocessing 
+
+port = 8967
 
 def server():
         try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                port = 8967
 
                 s.bind(('', port))
 
@@ -16,8 +17,9 @@ def server():
                 c, addr = s.accept()
 
                 print("Connected from " + str(addr) + ".")
-
-                c.send(bytes('Hey whats up?', 'utf-8'))
+                while True:
+                        c.send(bytes('Hey whats up? ', 'utf-8'))
+                        time.sleep(0.5)
 
                 c.close()
         except:
@@ -26,11 +28,13 @@ def server():
 def client():
         try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                port = 8967
 
                 s.connect(('127.0.0.1', port))
 
-                print(s.recv(0xFF))
+                while True: 
+                        print("Client received: " + str(s.recv(0xFF)))
+                        time.sleep(0.5)
+
 
                 s.close()
         except:
