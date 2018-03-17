@@ -93,7 +93,6 @@ def one_round_enc(data, key, stages):
         currword = one_stage_enc(word, newkey)
         for i in range(1, stages):
             newkey = newkey[1:] + newkey[:1]
-            print(newkey)
             currword = one_stage_enc(currword, newkey)
         newwords.append(currword)
     return b''.join(newwords)
