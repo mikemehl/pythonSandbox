@@ -71,3 +71,29 @@ def one_stage_dec(fourbytes, key):
         newval = (newhi << 4) | newlo
         newbytes.append(newval)
     return bytes(newbytes)
+
+#########################################################
+# one_round_enc
+#########################################################
+# Expects: 
+#         * data as a list of ints
+#         * key as a list of four ints
+#         * stages as an int
+# Returns:
+#         * encrypted data as list of bytes objects 
+def one_round_enc(data, key, stages):
+    while len(data)%4 != 0:
+        data.append(0x00)
+    bin_data = bytes(data)
+    words = [bin_data[i:i+4] for i in range(0, len(data), 4)]
+    newwords = []
+    currword = bytes(4)
+    newkey = key
+    for word in words:
+        currword = one_stage_enc(word, newkey)
+        for i in range(1, stages):
+            newkey = newkey[1:] + newkey[:1]
+            print(newkey)
+            currword = one_stage_enc(currword, newkey)
+        newwords.append(currword)
+    return b''.join(newwords)
