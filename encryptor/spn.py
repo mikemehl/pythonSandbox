@@ -2,9 +2,12 @@ import random
 import pdb
 
 samplebytes = bytes([0x01,0x02,0x03,0x04])
+          # 0   1   2   3  4   5   6   7   8   9   10  11  12  13  14  15
+sub     = ( 9, 11, 12,  4, 1,  7,  2, 15, 10, 13,  5,  14,  8,  3,  0,  6)
+invsub  = (14,  4,  6, 13, 3, 10, 15,  5, 12,  0,  8,   1,  2,  9, 11,  7) 
 
-sub = (9, 11, 12, 4, 1, 7, 2, 15, 10, 13, 5, 14, 8, 3, 0, 6)
-perm = (1, 2, 0, 3)
+perm    = (1, 2, 0, 3)
+invperm = (2, 0, 1, 3)
 
 hi_mask = 0b11110000
 lo_mask = 0b00001111
@@ -19,7 +22,7 @@ def permutation(fourbytes):
 # Expects: 
 #         * fourbytes as a bytes object with four members
 #         * key as a list of ints
-def one_round_enc(fourbytes, key):
+def one_stage_enc(fourbytes, key):
     newbytes = []
     for onebyte in fourbytes:
         #pdb.set_trace()
