@@ -96,3 +96,29 @@ def one_round_enc(data, key, stages):
             currword = one_stage_enc(currword, newkey)
         newwords.append(currword)
     return b''.join(newwords)
+
+#########################################################
+# one_round_dec
+#########################################################
+# Expects: 
+#         * data as a list of ints
+#         * key as a list of four ints
+#         * stages as an int
+# Returns:
+#         * decrypted data as list of bytes objects 
+def one_round_dec(data, key, stages):
+    bin_data = bytes(data)
+    words = [bin_data[i:i+4] for i in range(0, len(data), 4)]
+    newwords = []
+    currword = bytes(4)
+    newkey = key
+    #Rotate keys first!
+    for j in range(0, stages):
+        newkey = newkey[1:] + newkey[:1]
+    for word in words:
+        currword = one_stage_dec(word, newkey)
+        for i in range(1, stages):
+            newkey = newkey[-1:] + newkey[:-1]
+            currword = one_stage_dec(currword, newkey)
+        newwords.append(currword)
+    return b''.join(newwords)
