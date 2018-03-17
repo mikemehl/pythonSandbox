@@ -15,17 +15,28 @@ lo_mask = 0b00001111
 def substitution(halfbyte):
     return sub[halfbyte]
 
+def inv_substitution(halfbyte):
+    return invsub[halfbyte]
+
 def permutation(fourbytes):
     newbytes = [fourbytes[i] for i in perm]
     return bytes(newbytes) 
 
+def inv_permutation(fourbytes):
+    newbytes = [fourbytes[i] for i in invperm]
+    return bytes(newbytes) 
+
+#########################################################
+# one_stage_enc
+#########################################################
 # Expects: 
 #         * fourbytes as a bytes object with four members
 #         * key as a list of ints
+# Returns:
+#         * four bytes
 def one_stage_enc(fourbytes, key):
     newbytes = []
     for onebyte in fourbytes:
-        #pdb.set_trace()
         val = int(onebyte)
         hi = (val & hi_mask) >> 4
         lo = (val & lo_mask)
@@ -37,3 +48,26 @@ def one_stage_enc(fourbytes, key):
         newbytes[i] = newbytes[i]^int(key[i])
     return permutation(bytes(newbytes))
         
+#########################################################
+# one_stage_dec
+#########################################################
+# Expects: 
+#         * fourbytes as a bytes object with four members
+#         * key as a list of ints
+# Returns:
+#         * four bytes
+def one_stage_dec(fourbytes, key):
+    newbytes = [None]*len(key)
+    for i in range(0, len(key)):
+        newbytes[i] = int(fourbytes[i])^int(key[i])
+    invbytes = inv_permutation(bytes(newbytes))
+    newbytes = []
+    for onebyte in invbytes:
+        val = int(onebyte)
+        hi = (val & hi_mask) >> 4
+        lo = (val & lo_mask)
+        newhi = inv_substitution(hi)
+        newlo = inv_substitution(lo)
+        newval = (newhi << 4) | newlo
+        newbytes.append(newval)
+    return bytes(newbytes)
