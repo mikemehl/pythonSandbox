@@ -85,7 +85,7 @@ def one_round_enc(data, key, stages):
     while len(data)%4 != 0:
         data.append(0x00)
     bin_data = bytes(data)
-    words = [bin_data[i:i+4] for i in range(0, len(data), 4)]
+    words = [bin_data[i:(i+4)] for i in range(0, len(data), 4)]
     newwords = []
     currword = bytes(4)
     newkey = key
@@ -108,12 +108,12 @@ def one_round_enc(data, key, stages):
 #         * decrypted data as list of bytes objects 
 def one_round_dec(data, key, stages):
     bin_data = bytes(data)
-    words = [bin_data[i:i+4] for i in range(0, len(data), 4)]
+    words = [bin_data[i:(i+4)] for i in range(0, len(data), 4)]
     newwords = []
     currword = bytes(4)
     newkey = key
     #Rotate keys first!
-    for j in range(0, stages):
+    for j in range(1, stages):
         newkey = newkey[1:] + newkey[:1]
     for word in words:
         currword = one_stage_dec(word, newkey)
