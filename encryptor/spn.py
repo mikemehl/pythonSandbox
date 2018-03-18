@@ -128,11 +128,11 @@ def encrypt(data, key, stages):
         data.append(0x00)
     key_int = [int(key[i]) for i in range(0,4)]
     encrypted = []
-    for i in range(0, data, 4):
-        newkey = key_int[i%4:] + key_int[:i%4]
-        print(newkey)
-        encrypted.append(one_round_enc(data[i:i+4], newkey, stages))
-    return b''.join(data)
+    for i in range(0, len(data), 4):
+        key_int = key_int[1:] + key_int[:1]
+        encrypted.append(one_round_enc(data[i:i+4], key_int, stages))
+        print(key_int)
+    return b''.join(encrypted)
 
 #########################################################
 # decrypt 
@@ -146,8 +146,8 @@ def encrypt(data, key, stages):
 def decrypt(data, key, stages):
     key_int = [int(key[i]) for i in range(0,4)]
     decrypted = []
-    for i in range(0, data, 4):
-        newkey = key_int[i%4:] + key_int[:i%4]
-        print(newkey)
-        decrypted.append(one_round_dec(data[i:i+4], newkey, stages))
-    return b''.join(data)
+    for i in range(0, len(data), 4):
+        key_int = key_int[1:] + key_int[:1]
+        decrypted.append(one_round_dec(data[i:i+4], key_int, stages))
+        print(key_int)
+    return b''.join(decrypted)
