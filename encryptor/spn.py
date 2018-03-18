@@ -82,8 +82,6 @@ def one_stage_dec(fourbytes, key):
 # Returns:
 #         * encrypted data as list of bytes objects 
 def one_round_enc(data, key, stages):
-    while len(data)%4 != 0:
-        data.append(0x00)
     bin_data = bytes(data)
     words = [bin_data[i:(i+4)] for i in range(0, len(data), 4)]
     newwords = []
@@ -115,3 +113,41 @@ def one_round_dec(data, key, stages):
             currword = one_stage_dec(currword, key)
         newwords.append(currword)
     return b''.join(newwords)
+
+#########################################################
+# encrypt 
+#########################################################
+# Expects: 
+#         * data as bytes
+#         * key as a list of four bytes 
+#         * stages as an int
+# Returns:
+#         * decrypted data as a bytestring
+def encrypt(data, key, stages):
+    while len(data)%4 != 0:
+        data.append(0x00)
+    key_int = [int(key[i]) for i in range(0,4)]
+    encrypted = []
+    for i in range(0, data, 4):
+        newkey = key_int[i%4:] + key_int[:i%4]
+        print(newkey)
+        encrypted.append(one_round_enc(data[i:i+4], newkey, stages))
+    return b''.join(data)
+
+#########################################################
+# decrypt 
+#########################################################
+# Expects: 
+#         * data as bytes
+#         * key as a list of four bytes 
+#         * stages as an int
+# Returns:
+#         * decrypted data as a bytestring
+def decrypt(data, key, stages):
+    key_int = [int(key[i]) for i in range(0,4)]
+    decrypted = []
+    for i in range(0, data, 4):
+        newkey = key_int[i%4:] + key_int[:i%4]
+        print(newkey)
+        decrypted.append(one_round_dec(data[i:i+4], newkey, stages))
+    return b''.join(data)
