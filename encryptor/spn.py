@@ -57,12 +57,12 @@ def one_stage_enc(fourbytes, key):
 # Returns:
 #         * four bytes
 def one_stage_dec(fourbytes, key):
-    newbytes = [None]*len(key)
-    for i in range(0, len(key)):
-        newbytes[i] = int(fourbytes[i])^int(key[i])
-    invbytes = inv_permutation(bytes(newbytes))
     newbytes = []
-    for onebyte in invbytes:
+    invbytes = inv_permutation(bytes(fourbytes))
+    xoredbytes = [None]*len(fourbytes)
+    for i in range(0, len(key)):
+        xoredbytes[i] = int(invbytes[i])^int(key[i])
+    for onebyte in xoredbytes:
         val = int(onebyte)
         hi = (val & hi_mask) >> 4
         lo = (val & lo_mask)
