@@ -88,12 +88,10 @@ def one_round_enc(data, key, stages):
     words = [bin_data[i:(i+4)] for i in range(0, len(data), 4)]
     newwords = []
     currword = bytes(4)
-    newkey = key
     for word in words:
-        currword = one_stage_enc(word, newkey)
-        for i in range(1, stages):
-            newkey = newkey[1:] + newkey[:1]
-            currword = one_stage_enc(currword, newkey)
+        currword = word
+        for i in range(0, stages):
+            currword = one_stage_enc(currword, key)
         newwords.append(currword)
     return b''.join(newwords)
 
@@ -111,14 +109,9 @@ def one_round_dec(data, key, stages):
     words = [bin_data[i:(i+4)] for i in range(0, len(data), 4)]
     newwords = []
     currword = bytes(4)
-    newkey = key
-    #Rotate keys first!
-    for j in range(1, stages):
-        newkey = newkey[1:] + newkey[:1]
     for word in words:
-        currword = one_stage_dec(word, newkey)
-        for i in range(1, stages):
-            newkey = newkey[-1:] + newkey[:-1]
-            currword = one_stage_dec(currword, newkey)
+        currword = word
+        for i in range(0, stages):
+            currword = one_stage_dec(currword, key)
         newwords.append(currword)
     return b''.join(newwords)
