@@ -234,6 +234,8 @@ def encrypt_file(fileName, outName, key, stages):
     while inData:
         outFile.write(encrypt_multi(inData, key, stages))
         inData = inFile.read(512)
+    inFile.close()
+    outFile.close()
     
 #########################################################
 # decrypt_file 
@@ -246,3 +248,5 @@ def decrypt_file(fileName, outName, key, stages):
     while inData:
         outFile.write(decrypt_multi(inData, key, stages))
         inData = inFile.read(512)
+    inFile.close()
+    outFile.close()
