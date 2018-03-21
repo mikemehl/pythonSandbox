@@ -2,6 +2,9 @@ import random
 import pdb
 import multiprocessing as mp
 import logging
+import os
+import shutil
+import progressbar
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -21,6 +24,8 @@ LO_MASK = 0b00001111
 
 BLOCK_LENGTH = 16
 KEY_LENGTH = BLOCK_LENGTH
+
+NONCE = 0xAB38D39FEBC0EF160000000000000000
 
 def substitution(halfbyte):
     return SUB[halfbyte]
@@ -199,7 +204,7 @@ def encrypt_file(fileName, outName, key, stages):
     inData = inFile.read(512)
     while inData:
         while len(inData)%16 != 0:
-            inData.append(0x00)
+            inData += bytes(1)
         key_int = [int(key[i]) for i in range(0,len(key))]
         args = []
         for i in range(0, len(inData), 16):
@@ -224,7 +229,7 @@ def decrypt_file(fileName, outName, key, stages):
     inData = inFile.read(512)
     while inData:
         while len(inData)%16 != 0:
-            inData.append(0x00)
+            inData += bytes(1)
         key_int = [int(key[i]) for i in range(0,len(key))]
         args = []
         for i in range(0, len(inData), 16):
@@ -237,3 +242,60 @@ def decrypt_file(fileName, outName, key, stages):
         inData = inFile.read(512)
     inFile.close()
     outFile.close()
+
+#########################################################
+# encrypt_file_counter
+#########################################################
+def encrypt_file_counter(fileName, outName, key, stages):
+    counter = int(NONCE)
+    inFile = open(fileName, 'rb')
+    outFile = open(outName, 'wb')
+    pool = mp.Pool(processes=4)
+    outData = []
+    inData = inFile.read(512)
+    while inData:
+        while len(inData)%16 != 0:
+            inData += bytes(1)
+        key_int = [int(key[i]) for i in range(0,len(key))]
+        args = []
+        for i in range(0, len(inData), 16):
+            newlist = [None]*3
+            newlist[0] = int.to_bytes(counter, 16, byteorder='big')
+            newlist[1] = key_int[1:] + key_int[:1]
+            newlist[2] = stages
+            args.append(newlist)
+            counter += 1
+        result = b''.join(pool.map(one_round_enc_args, args))
+        towrite = bytes([result[i]^inData[i]  \
+                        for i in range(0, len(inData))])
+        outFile.write(towrite)
+        inData = inFile.read(512)
+    inFile.close()
+    outFile.close()
+    
+#########################################################
+# encrypt_directory
+#########################################################
+def encrypt_directory(directory, key):
+    currdir = os.getcwd()
+    os.chdir(directory + '/..')
+    try:
+        shutil.copytree(directory, directory + '_ENCRYPTED')
+    except:
+        print("~~~Unable to complete operation~~~")
+    os.chdir(directory + '_ENCRYPTED')
+    print("Grabbing filenames...")
+    dudes = [os.path.join(d, x) for d, dirx, files in os.walk(os.getcwd()) for x in files]
+    print('Encrypting...')
+    with progressbar.ProgressBar(max_value=len(dudes), redirect_stdout=True) as bar:
+        i = 0
+        for dude in dudes:
+            print('Encrypting ' + os.path.basename(dude))
+            encrypt_file_counter(dude, dude+'_ENCRYPTED', key, 10)
+            os.unlink(dude)
+            shutil.move(dude+'_ENCRYPTED', dude)
+            i += 1
+            bar.update(i)
+    print('Finished.')
+    os.chdir(currdir)
+    return
