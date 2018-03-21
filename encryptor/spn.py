@@ -1,46 +1,57 @@
 import random
 import pdb
 import multiprocessing as mp
+import logging
 
-samplebytes = bytes([0x01,0x02,0x03,0x04])
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+logging.disable(logging.DEBUG)
+
+samplebytes = bytes([i for i in range(0,64)])
           # 0   1   2   3  4   5   6   7   8   9   10  11  12  13  14  15
-sub     = ( 9, 11, 12,  4, 1,  7,  2, 15, 10, 13,  5,  14,  8,  3,  0,  6)
-invsub  = (14,  4,  6, 13, 3, 10, 15,  5, 12,  0,  8,   1,  2,  9, 11,  7) 
+SUB     = ( 9, 11, 12,  4, 1,  7,  2, 15, 10, 13,  5,  14,  8,  3,  0,  6)
+INVSUB  = (14,  4,  6, 13, 3, 10, 15,  5, 12,  0,  8,   1,  2,  9, 11,  7) 
 
-perm    = (1, 2, 0, 3)
-invperm = (2, 0, 1, 3)
+          # 0   1   2   3  4   5   6   7   8   9   10  11  12  13  14  15
+PERM    = ( 1,  2,  0,  7, 14, 9,  8,  3,  6,  4,   5, 10, 13, 11, 15, 12)
+INVPERM = ( 2,  0,  1,  7,  9,10,  8,  3,  6,  5,  11, 13, 15, 12,  4, 14)
 
-hi_mask = 0b11110000
-lo_mask = 0b00001111
+HI_MASK = 0b11110000
+LO_MASK = 0b00001111
+
+BLOCK_LENGTH = 16
+KEY_LENGTH = BLOCK_LENGTH
 
 def substitution(halfbyte):
-    return sub[halfbyte]
+    return SUB[halfbyte]
 
 def inv_substitution(halfbyte):
-    return invsub[halfbyte]
+    return INVSUB[halfbyte]
 
-def permutation(fourbytes):
-    newbytes = [fourbytes[i] for i in perm]
+def permutation(sixteenbytes):
+    newbytes = [sixteenbytes[i] for i in PERM]
     return bytes(newbytes) 
 
-def inv_permutation(fourbytes):
-    newbytes = [fourbytes[i] for i in invperm]
+def inv_permutation(sixteenbytes):
+    newbytes = [sixteenbytes[i] for i in INVPERM]
     return bytes(newbytes) 
 
 #########################################################
 # one_stage_enc
 #########################################################
 # Expects: 
-#         * fourbytes as a bytes object with four members
+#         * sixteenbytes as a bytes object with sixteen members
 #         * key as a list of ints
 # Returns:
-#         * four bytes
-def one_stage_enc(fourbytes, key):
+#         * sixteen bytes
+def one_stage_enc(sixteenbytes, key):
+    assert len(sixteenbytes) == BLOCK_LENGTH
+    assert len(key) == KEY_LENGTH
     newbytes = []
-    for onebyte in fourbytes:
+    for onebyte in sixteenbytes:
         val = int(onebyte)
-        hi = (val & hi_mask) >> 4
-        lo = (val & lo_mask)
+        hi = (val & HI_MASK) >> 4
+        lo = (val & LO_MASK)
         newhi = substitution(hi)
         newlo = substitution(lo)
         newval = (newhi << 4) | newlo
@@ -53,20 +64,22 @@ def one_stage_enc(fourbytes, key):
 # one_stage_dec
 #########################################################
 # Expects: 
-#         * fourbytes as a bytes object with four members
+#         * sixteenbytes as a bytes object with sixteen members
 #         * key as a list of ints
 # Returns:
 #         * four bytes
-def one_stage_dec(fourbytes, key):
+def one_stage_dec(sixteenbytes, key):
+    assert len(sixteenbytes) == BLOCK_LENGTH
+    assert len(key) == KEY_LENGTH
     newbytes = []
-    invbytes = inv_permutation(bytes(fourbytes))
-    xoredbytes = [None]*len(fourbytes)
+    invbytes = inv_permutation(bytes(sixteenbytes))
+    xoredbytes = [None]*len(sixteenbytes)
     for i in range(0, len(key)):
         xoredbytes[i] = int(invbytes[i])^int(key[i])
     for onebyte in xoredbytes:
         val = int(onebyte)
-        hi = (val & hi_mask) >> 4
-        lo = (val & lo_mask)
+        hi = (val & HI_MASK) >> 4
+        lo = (val & LO_MASK)
         newhi = inv_substitution(hi)
         newlo = inv_substitution(lo)
         newval = (newhi << 4) | newlo
@@ -83,10 +96,11 @@ def one_stage_dec(fourbytes, key):
 # Returns:
 #         * encrypted data as list of bytes objects 
 def one_round_enc(data, key, stages):
+    assert len(key) == KEY_LENGTH
     bin_data = bytes(data)
-    words = [bin_data[i:(i+4)] for i in range(0, len(data), 4)]
+    words = [bin_data[i:(i+16)] for i in range(0, len(data), 16)]
     newwords = []
-    currword = bytes(4)
+    currword = bytes(16)
     for word in words:
         currword = word
         for i in range(0, stages):
@@ -104,10 +118,11 @@ def one_round_enc(data, key, stages):
 # Returns:
 #         * decrypted data as list of bytes objects 
 def one_round_dec(data, key, stages):
+    assert len(key) == KEY_LENGTH
     bin_data = bytes(data)
-    words = [bin_data[i:(i+4)] for i in range(0, len(data), 4)]
+    words = [bin_data[i:(i+16)] for i in range(0, len(data), 16)]
     newwords = []
-    currword = bytes(4)
+    currword = bytes(16)
     for word in words:
         currword = word
         for i in range(0, stages):
@@ -125,14 +140,14 @@ def one_round_dec(data, key, stages):
 # Returns:
 #         * decrypted data as a bytestring
 def encrypt(data, key, stages):
-    while len(data)%4 != 0:
+    assert len(key) == KEY_LENGTH
+    while len(data)%16 != 0:
         data.append(0x00)
-    key_int = [int(key[i]) for i in range(0,4)]
+    key_int = [int(key[i]) for i in range(0,len(key))]
     encrypted = []
-    for i in range(0, len(data), 4):
+    for i in range(0, len(data), 16):
         key_int = key_int[1:] + key_int[:1]
-        encrypted.append(one_round_enc(data[i:i+4], key_int, stages))
-        print(key_int)
+        encrypted.append(one_round_enc(data[i:i+16], key_int, stages))
     return b''.join(encrypted)
 
 #########################################################
@@ -145,12 +160,12 @@ def encrypt(data, key, stages):
 # Returns:
 #         * decrypted data as a bytestring
 def decrypt(data, key, stages):
-    key_int = [int(key[i]) for i in range(0,4)]
+    assert len(key) == KEY_LENGTH
+    key_int = [int(key[i]) for i in range(0,16)]
     decrypted = []
-    for i in range(0, len(data), 4):
+    for i in range(0, len(data), 16):
         key_int = key_int[1:] + key_int[:1]
-        decrypted.append(one_round_dec(data[i:i+4], key_int, stages))
-        print(key_int)
+        decrypted.append(one_round_dec(data[i:i+16], key_int, stages))
     return b''.join(decrypted)
 
 #########################################################
@@ -174,65 +189,26 @@ def one_round_dec_args(packed):
     return one_round_dec(packed[0], packed[1], packed[2])
 
 #########################################################
-# encrypt_multi 
-#########################################################
-# Expects: 
-#         * data as bytes
-#         * key as a list of four bytes 
-#         * stages as an int
-# Returns:
-#         * decrypted data as a bytestring
-def encrypt_multi(data, key, stages):
-    while len(data)%4 != 0:
-        data.append(0x00)
-    key_int = [int(key[i]) for i in range(0,4)]
-    args = []
-    for i in range(0, len(data), 4):
-        newlist = [None]*3
-        newlist[0] = data[i:i+4]
-        newlist[1] = key_int[1:] + key_int[:1]
-        newlist[2] = stages
-        args.append(newlist)
-    #encrypted.append(one_round_enc(data[i:i+4], key_int, stages))
-    pool = mp.Pool(processes=4)
-    encrypted = pool.map(one_round_enc_args, args)
-    return b''.join(encrypted)
-
-#########################################################
-# decrypt_multi 
-#########################################################
-# Expects: 
-#         * data as bytes
-#         * key as a list of four bytes 
-#         * stages as an int
-# Returns:
-#         * decrypted data as a bytestring
-def decrypt_multi(data, key, stages):
-    while len(data)%4 != 0:
-        data.append(0x00)
-    key_int = [int(key[i]) for i in range(0,4)]
-    args = []
-    for i in range(0, len(data), 4):
-        newlist = [None]*3
-        newlist[0] = data[i:i+4]
-        newlist[1] = key_int[1:] + key_int[:1]
-        newlist[2] = stages
-        args.append(newlist)
-    pool = mp.Pool(processes=4)
-    decrypted = pool.map(one_round_dec_args, args)
-    return b''.join(decrypted)
-
-
-#########################################################
 # encrypt_file 
 #########################################################
 def encrypt_file(fileName, outName, key, stages):
     inFile = open(fileName, 'rb')
     outFile = open(outName, 'wb')
-    inData = theFile.read(512)
+    pool = mp.Pool(processes=4)
     outData = []
+    inData = inFile.read(512)
     while inData:
-        outFile.write(encrypt_multi(inData, key, stages))
+        while len(inData)%16 != 0:
+            inData.append(0x00)
+        key_int = [int(key[i]) for i in range(0,len(key))]
+        args = []
+        for i in range(0, len(inData), 16):
+            newlist = [None]*3
+            newlist[0] = inData[i:i+16]
+            newlist[1] = key_int[1:] + key_int[:1]
+            newlist[2] = stages
+            args.append(newlist)
+        outFile.write(b''.join(pool.map(one_round_enc_args, args)))
         inData = inFile.read(512)
     inFile.close()
     outFile.close()
@@ -243,10 +219,21 @@ def encrypt_file(fileName, outName, key, stages):
 def decrypt_file(fileName, outName, key, stages):
     inFile = open(fileName, 'rb')
     outFile = open(outName, 'wb')
-    inData = theFile.read(512)
+    pool = mp.Pool(processes=4)
     outData = []
+    inData = inFile.read(512)
     while inData:
-        outFile.write(decrypt_multi(inData, key, stages))
+        while len(inData)%16 != 0:
+            inData.append(0x00)
+        key_int = [int(key[i]) for i in range(0,len(key))]
+        args = []
+        for i in range(0, len(inData), 16):
+            newlist = [None]*3
+            newlist[0] = inData[i:i+16]
+            newlist[1] = key_int[1:] + key_int[:1]
+            newlist[2] = stages
+            args.append(newlist)
+        outFile.write(b''.join(pool.map(one_round_dec_args, args)))
         inData = inFile.read(512)
     inFile.close()
     outFile.close()
