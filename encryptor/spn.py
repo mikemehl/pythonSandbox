@@ -27,6 +27,10 @@ KEY_LENGTH = BLOCK_LENGTH
 
 NONCE = 0xAB38D39FEBC0EF160000000000000000
 
+NUM_PROCESSES = os.mp.cpu_count()
+
+READ_LENGTH = 2048
+
 def substitution(halfbyte):
     return SUB[halfbyte]
 
@@ -199,9 +203,9 @@ def one_round_dec_args(packed):
 def encrypt_file(fileName, outName, key, stages):
     inFile = open(fileName, 'rb')
     outFile = open(outName, 'wb')
-    pool = mp.Pool(processes=4)
+    pool = mp.Pool(processes=NUM_PROCESSES)
     outData = []
-    inData = inFile.read(512)
+    inData = inFile.read(READ_LENGTH)
     while inData:
         while len(inData)%16 != 0:
             inData += bytes(1)
@@ -214,7 +218,7 @@ def encrypt_file(fileName, outName, key, stages):
             newlist[2] = stages
             args.append(newlist)
         outFile.write(b''.join(pool.map(one_round_enc_args, args)))
-        inData = inFile.read(512)
+        inData = inFile.read(READ_LENGTH)
     inFile.close()
     outFile.close()
     
@@ -224,9 +228,9 @@ def encrypt_file(fileName, outName, key, stages):
 def decrypt_file(fileName, outName, key, stages):
     inFile = open(fileName, 'rb')
     outFile = open(outName, 'wb')
-    pool = mp.Pool(processes=4)
+    pool = mp.Pool(processes=NUM_PROCESSES)
     outData = []
-    inData = inFile.read(512)
+    inData = inFile.read(READ_LENGTH)
     while inData:
         while len(inData)%16 != 0:
             inData += bytes(1)
@@ -239,7 +243,7 @@ def decrypt_file(fileName, outName, key, stages):
             newlist[2] = stages
             args.append(newlist)
         outFile.write(b''.join(pool.map(one_round_dec_args, args)))
-        inData = inFile.read(512)
+        inData = inFile.read(READ_LENGTH)
     inFile.close()
     outFile.close()
 
@@ -250,9 +254,9 @@ def encrypt_file_counter(fileName, outName, key, stages):
     counter = int(NONCE)
     inFile = open(fileName, 'rb')
     outFile = open(outName, 'wb')
-    pool = mp.Pool(processes=4)
+    pool = mp.Pool(processes=NUM_PROCESSES)
     outData = []
-    inData = inFile.read(512)
+    inData = inFile.read(READ_LENGTH)
     while inData:
         while len(inData)%16 != 0:
             inData += bytes(1)
@@ -269,7 +273,7 @@ def encrypt_file_counter(fileName, outName, key, stages):
         towrite = bytes([result[i]^inData[i]  \
                         for i in range(0, len(inData))])
         outFile.write(towrite)
-        inData = inFile.read(512)
+        inData = inFile.read(READ_LENGTH)
     inFile.close()
     outFile.close()
     
