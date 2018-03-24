@@ -289,8 +289,7 @@ def enc_file_inplace(fileName, key, stages):
     bytesread = 0
     while inData:
         bytesread = len(inData)
-        logging.debug('Read ' + bytesread + ' bytes from ' + fileName)
-        while bytesread%16 != 0:
+        while len(inData)%16 != 0:
             inData += bytes(1)
         key_int = [int(key[i]) for i in range(0,len(key))]
         args = []
@@ -305,7 +304,6 @@ def enc_file_inplace(fileName, key, stages):
         towrite = bytes([result[i]^inData[i]  \
                         for i in range(0, len(inData))])
         dataFile.seek(-bytesread, 1)
-        logging.debug('File pos: ' + dataFile.tell())
         dataFile.write(towrite)
         inData = dataFile.read(READ_LENGTH)
     dataFile.close()
@@ -342,21 +340,23 @@ def encrypt_directory(directory, key):
 #    *Same as above, but just do it in place w0000h
 #########################################################
 def encrypt_directory_inplace(directory, key):
-    currdir = os.getcwd()
-    logging.debug(currdir)
-    os.chdir(directory + '/..')
-    print("Grabbing filenames...")
-    dudes = [os.path.join(d, x) for d, dirx, files in os.walk(os.getcwd()) for x in files]
-    print('Encrypting...')
-    logging.debug(dudes)
-    with progressbar.ProgressBar(max_value=len(dudes), redirect_stdout=True) as bar:
-        i = 0
-        for dude in dudes:
-            logging.debug(dude)
-            print('Encrypting ' + os.path.basename(dude))
-            enc_file_inplace(dude, key, 10)
-            i += 1
-            bar.update(i)
-    print('Finished.')
-    os.chdir(currdir)
+    try:
+        if len(key) != BLOCK_LENGTH:
+            raise Exception('Key length must be ' + str(BLOCK_LENGTH) + '!')
+        currdir = os.getcwd()
+        os.chdir(directory)
+        print("Grabbing filenames...")
+        dudes = [os.path.join(d, x) for d, dirx, files in os.walk(os.getcwd()) for x in files]
+        print('Encrypting...')
+        with progressbar.ProgressBar(max_value=len(dudes), redirect_stdout=True) as bar:
+            i = 0
+            for dude in dudes:
+                print('Encrypting ' + os.path.basename(dude))
+                enc_file_inplace(dude, key, 10)
+                i += 1
+                bar.update(i)
+        print('Finished.')
+        os.chdir(currdir)
+    except Exception as err:
+        print(err)
     return
