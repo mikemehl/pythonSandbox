@@ -8,7 +8,7 @@ import progressbar
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
-logging.disable(logging.DEBUG)
+#logging.disable(logging.DEBUG)
 
 samplebytes = bytes([i for i in range(0,64)])
           # 0   1   2   3  4   5   6   7   8   9   10  11  12  13  14  15
@@ -27,9 +27,9 @@ KEY_LENGTH = BLOCK_LENGTH
 
 NONCE = 0xAB38D39FEBC0EF160000000000000000
 
-NUM_PROCESSES = os.mp.cpu_count()
+NUM_PROCESSES = mp.cpu_count()
 
-READ_LENGTH = 2048
+READ_LENGTH = 2 << 24
 
 def substitution(halfbyte):
     return SUB[halfbyte]
@@ -278,6 +278,39 @@ def encrypt_file_counter(fileName, outName, key, stages):
     outFile.close()
     
 #########################################################
+# enc_file_inplace
+#  *Like above, but don't make a new file.
+#########################################################
+def enc_file_inplace(fileName, key, stages):
+    counter = int(NONCE)
+    dataFile = open(fileName, 'rb+')
+    pool = mp.Pool(processes=NUM_PROCESSES)
+    inData = dataFile.read(READ_LENGTH)
+    bytesread = 0
+    while inData:
+        bytesread = len(inData)
+        logging.debug('Read ' + bytesread + ' bytes from ' + fileName)
+        while bytesread%16 != 0:
+            inData += bytes(1)
+        key_int = [int(key[i]) for i in range(0,len(key))]
+        args = []
+        for i in range(0, bytesread, 16):
+            newlist = [None]*3
+            newlist[0] = int.to_bytes(counter, 16, byteorder='big')
+            newlist[1] = key_int[1:] + key_int[:1]
+            newlist[2] = stages
+            args.append(newlist)
+            counter += 1
+        result = b''.join(pool.map(one_round_enc_args, args))
+        towrite = bytes([result[i]^inData[i]  \
+                        for i in range(0, len(inData))])
+        dataFile.seek(-bytesread, 1)
+        logging.debug('File pos: ' + dataFile.tell())
+        dataFile.write(towrite)
+        inData = dataFile.read(READ_LENGTH)
+    dataFile.close()
+    
+#########################################################
 # encrypt_directory
 #########################################################
 def encrypt_directory(directory, key):
@@ -298,6 +331,30 @@ def encrypt_directory(directory, key):
             encrypt_file_counter(dude, dude+'_ENCRYPTED', key, 10)
             os.unlink(dude)
             shutil.move(dude+'_ENCRYPTED', dude)
+            i += 1
+            bar.update(i)
+    print('Finished.')
+    os.chdir(currdir)
+    return
+
+#########################################################
+# encrypt_directory_inplace
+#    *Same as above, but just do it in place w0000h
+#########################################################
+def encrypt_directory_inplace(directory, key):
+    currdir = os.getcwd()
+    logging.debug(currdir)
+    os.chdir(directory + '/..')
+    print("Grabbing filenames...")
+    dudes = [os.path.join(d, x) for d, dirx, files in os.walk(os.getcwd()) for x in files]
+    print('Encrypting...')
+    logging.debug(dudes)
+    with progressbar.ProgressBar(max_value=len(dudes), redirect_stdout=True) as bar:
+        i = 0
+        for dude in dudes:
+            logging.debug(dude)
+            print('Encrypting ' + os.path.basename(dude))
+            enc_file_inplace(dude, key, 10)
             i += 1
             bar.update(i)
     print('Finished.')
