@@ -1,6 +1,7 @@
 import matplotlib.image as img
 import pdb
 import logging
+import multiprocessing as mp
 
 SAMPLE_FILE = 'sample1.jpg'
 logging.basicConfig(filename='log.txt', level=logging.INFO)
@@ -9,7 +10,9 @@ logging.basicConfig(filename='log.txt', level=logging.INFO)
 def getImgData(filename):
    return img.imread(filename)
 
-#Takes output of getImgData and returns a set of all the unique RGB pairs.
+#Takes output of getImgData and returns a set of all the unique R, G, and B values.
+#  aka, all values of 0-255 present in R, G, or B.
+#May want to modify this to get unique RBG tuples.
 def getUniqueValues(imgdata):
    ret = set()
    size = imgdata.shape
@@ -18,6 +21,7 @@ def getUniqueValues(imgdata):
    return ret
    
 #Same as above, but return unique sequences of a certain length.
+#May want to modify this to get unique sequences of RGB tuples.
 def getUniqueSeqs(imgdata, length):
    ret = set()
    size = imgdata.shape
@@ -25,8 +29,6 @@ def getUniqueSeqs(imgdata, length):
    for i in range(0, len(imgdata.flat)):
       if i+length < len(imgdata.flat):
          ret.add(tuple(imgdata.flat[i:i+length]))
-         #logging.info(str(tuple(imgdata.flat[i:i+length])))
-         logging.info('Unique Sequence Iteration: ' + str(i))
       else:
          break
    return ret
@@ -41,7 +43,7 @@ def main():
   data = getImgData(SAMPLE_FILE) 
   vals = getUniqueValues(data)
   seqs = getUniqueSeqs(data, 50)
-  print(seqs)
+  #print(seqs)
   return
 
 if __name__ == '__main__':
