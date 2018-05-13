@@ -6,6 +6,12 @@ import multiprocessing as mp
 from collections import namedtuple
 from copy import deepcopy
 
+""" ImageData
+    Call with a filename and length passed in to automatically harvest info.
+    Then, call getParams to get the info in a UniqueVals namedtuple.
+"""
+
+
 SAMPLE_FILE = 'sample1.jpg'
 logging.basicConfig(format='%(asctime)s : %(levelname)6s : %(message)s', level=logging.DEBUG)
 UniqueVals = namedtuple('UniqueVals', 'pixels seqs seqlength')
