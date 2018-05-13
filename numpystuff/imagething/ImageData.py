@@ -4,7 +4,6 @@ import logging
 import progressbar
 import multiprocessing as mp
 from collections import namedtuple
-from copy import deepcopy
 
 """ ImageData
     Call with a filename and length passed in to automatically harvest info.
