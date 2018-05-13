@@ -8,7 +8,7 @@ from copy import deepcopy
 
 SAMPLE_FILE = 'sample1.jpg'
 logging.basicConfig(format='%(asctime)s : %(levelname)6s : %(message)s', level=logging.DEBUG)
-UniqueVals = namedtuple('UniqueVals', 'pixels', 'seqs', 'seqlength')
+UniqueVals = namedtuple('UniqueVals', 'pixels seqs seqlength')
 
 #Class for image operations and data
 #class ImageData#######################################################################################
@@ -28,7 +28,7 @@ class ImageData:
          self.data     = self.getImgData(self.filename)
          self.pixels   = self.imgToPixels(self.data)
          self.getUniqueData(length)
-         self.params   = UniqueVals(pixels = self.vals, seqs=self.seqs, length=length)
+         self.params   = UniqueVals(pixels = self.values, seqs=self.seqs, seqlength=length)
       except:
          logging.error("Setting up image data failed for " + str(filename))
       return
@@ -45,10 +45,7 @@ class ImageData:
 
    #Returns parameters once calculated
    def getParams(self):
-      try:
-         return deepcopy(self.params)
-      except:
-         logging.error('getParams() called before params defined.')
+      return self.params
 
    #Returns a numpy 3d matrix of RGB values.
    def getImgData(self, filename):
