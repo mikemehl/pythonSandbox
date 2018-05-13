@@ -4,6 +4,7 @@ import logging
 import progressbar
 import multiprocessing as mp
 from collections import namedtuple
+from copy import deepcopy
 
 SAMPLE_FILE = 'sample1.jpg'
 logging.basicConfig(format='%(asctime)s : %(levelname)6s : %(message)s', level=logging.DEBUG)
@@ -27,6 +28,7 @@ class ImageData:
          self.data     = self.getImgData(self.filename)
          self.pixels   = self.imgToPixels(self.data)
          self.getUniqueData(length)
+         self.params   = UniqueVals(pixels = self.vals, seqs=self.seqs, length=length)
       except:
          logging.error("Setting up image data failed for " + str(filename))
       return
@@ -40,6 +42,13 @@ class ImageData:
    def __exit__(self):
          __del__(self)
          return
+
+   #Returns parameters once calculated
+   def getParams(self):
+      try:
+         return deepcopy(self.params)
+      except:
+         logging.error('getParams() called before params defined.')
 
    #Returns a numpy 3d matrix of RGB values.
    def getImgData(self, filename):
@@ -90,8 +99,9 @@ class ImageData:
 ###################################################################################################
 def main():
   img  = ImageData(SAMPLE_FILE, 50) 
-  logging.debug(list(img.values)[5])
-  logging.debug(list(img.seqs)[5])
+  dude = img.getParams()
+  logging.debug(list(dude.pixels)[5])
+  logging.debug(list(dude.seqs)[5])
   return
 
 if __name__ == '__main__':
