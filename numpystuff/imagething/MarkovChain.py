@@ -15,6 +15,8 @@ import progressbar
 
 MAT_FILE = 'markovmtx.dat'
 MAX_ENTRY = (2**8)-1
+MEM_LIMIT  = 15
+TYPE_SIZE = 1
 
 
 def getMatrixDicts(xvals, yvals):
@@ -75,13 +77,17 @@ def main():
     img    = ImageData(SAMPLE_FILE, 200)
     dude   = img.getParams()
     xi, yi = getMatrixDicts(dude.seqs, dude.pixels)
+    bneeded = len(xi)*len(yi)*TYPE_SIZE
+    gneeded = bneeded*10e-9
+    if gneeded > MEM_LIMIT:
+      logging.debug('MEM_LIMIT: ' + str(MEM_LIMIT))
+      logging.debug('Required size: ' + str(gneeded))
+      raise OverflowError('Max memory limit exceeded.')
     logging.debug('X Length: ' + str(len(xi)))
     logging.debug('Y Length: ' + str(len(yi)))
-    logging.debug('Size needed: ' + str(len(xi)*len(yi)*1) + ' bytes!')
-    logging.debug('Thats approx: ' + str((len(xi)*len(yi)*1*10**(-9))) + ' Gigabytes!')
+    logging.debug('Size needed: ' + str(bneeded) + ' bytes, approximately ' + str(gneeded) + ' gigabytes.')
     #Don't forget to check for overflow later!
     mat = np.memmap(MAT_FILE, dtype='uint8', mode='w+', shape=(len(xi),len(yi)))
-    mat.flush()
     addValsToMatrix(mat, xi, yi, img)
     return
 if __name__ == "__main__":
