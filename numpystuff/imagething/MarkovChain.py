@@ -71,7 +71,7 @@ def main():
     logging.debug('Y Length: ' + str(len(yi)))
     #Oh boy, this thing is huge. Use int8 for your matrix to save space. 
     #Don't forget to check for overflow later!
-    mat = np.memmap(MAT_FILE, dtype='float32', mode='w+', shape=(len(xi),len(yi)))
+    mat = np.memmap(MAT_FILE, dtype='uint32', mode='w+', shape=(len(xi),len(yi)))
     mat.flush()
     addValsToMatrix(mat, xi, yi, img)
     return
