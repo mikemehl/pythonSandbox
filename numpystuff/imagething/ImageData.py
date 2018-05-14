@@ -11,7 +11,7 @@ from collections import namedtuple
 """
 
 
-SAMPLE_FILE = 'sample1.jpg'
+SAMPLE_FILE = 'sample2.jpg'
 logging.basicConfig(format='%(asctime)s : %(levelname)6s : %(message)s', level=logging.DEBUG)
 UniqueVals = namedtuple('UniqueVals', 'pixels seqs seqlength')
 

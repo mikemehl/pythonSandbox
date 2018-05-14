@@ -72,7 +72,7 @@ def addValsToMatrix(mat, xi, yi, img):
     return count
 
 def main():
-    img    = ImageData(SAMPLE_FILE, 50)
+    img    = ImageData(SAMPLE_FILE, 200)
     dude   = img.getParams()
     xi, yi = getMatrixDicts(dude.seqs, dude.pixels)
     logging.debug('X Length: ' + str(len(xi)))
