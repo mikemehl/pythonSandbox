@@ -18,17 +18,9 @@ UniqueVals = namedtuple('UniqueVals', 'pixels seqs seqlength')
 #Class for image operations and data
 #class ImageData#######################################################################################
 class ImageData:
-   def __init__(self, filename):
-      try:
-         self.filename = filename
-         self.data     = self.getImgData(self.filename)
-         self.pixels   = self.imgToPixels(self.data)
-      except:
-         logging.error("Setting up image data failed for " + str(filename))
-      return
-
    def __init__(self, filename, length):
       try:
+         self.length   = length
          self.filename = filename
          self.data     = self.getImgData(self.filename)
          self.pixels   = self.imgToPixels(self.data)
@@ -42,6 +34,7 @@ class ImageData:
          pass
 
    def __enter__(self):
+         __init__(self)
          pass
 
    def __exit__(self):
