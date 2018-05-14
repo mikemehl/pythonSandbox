@@ -14,7 +14,7 @@ import logging
 import progressbar
 
 MAT_FILE = 'markovmtx.dat'
-MAX_ENTRY = (2**16)-1
+MAX_ENTRY = (2**8)-1
 
 
 def getMatrixDicts(xvals, yvals):
@@ -77,10 +77,10 @@ def main():
     xi, yi = getMatrixDicts(dude.seqs, dude.pixels)
     logging.debug('X Length: ' + str(len(xi)))
     logging.debug('Y Length: ' + str(len(yi)))
-    logging.debug('Size needed: ' + str(len(xi)*len(yi)*4) + ' bytes!')
-    logging.debug('Thats approx: ' + str((len(xi)*len(yi)*4*10**(-9))) + ' Gigabytes!')
+    logging.debug('Size needed: ' + str(len(xi)*len(yi)*1) + ' bytes!')
+    logging.debug('Thats approx: ' + str((len(xi)*len(yi)*1*10**(-9))) + ' Gigabytes!')
     #Don't forget to check for overflow later!
-    mat = np.memmap(MAT_FILE, dtype='uint16', mode='w+', shape=(len(xi),len(yi)))
+    mat = np.memmap(MAT_FILE, dtype='uint8', mode='w+', shape=(len(xi),len(yi)))
     mat.flush()
     addValsToMatrix(mat, xi, yi, img)
     return
