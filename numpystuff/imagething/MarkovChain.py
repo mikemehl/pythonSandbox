@@ -14,18 +14,26 @@ import logging
 import progressbar
 
 MAT_FILE = 'markovmtx.dat'
-MAX_ENTRY = 2**32-1
+MAX_ENTRY = (2**16)-1
 
 
 def getMatrixDicts(xvals, yvals):
     xindexes = dict() 
     yindexes = dict()
-    i = 0
-    for val in xvals:
-        xindexes[val]=i
-    j = 0
-    for val in yvals:
-        yindexes[val]=j
+    print("Assigning x indexes...")
+    with progressbar.ProgressBar(max_value = len(xvals), redirect_stdout=True) as bar:
+            i = 0
+            for val in xvals:
+                xindexes[val]=i
+                i += 1
+                bar.update(i)
+    print("Assigning y indexes...")
+    with progressbar.ProgressBar(max_value = len(yvals), redirect_stdout=True) as bar:
+            j = 0
+            for val in yvals:
+                yindexes[val]=j
+                j += 1
+                bar.update(j)
     return xindexes, yindexes
 
 #Use the output of getMatrixDicts and passed in matrix to fill out the matrix.
@@ -64,14 +72,15 @@ def addValsToMatrix(mat, xi, yi, img):
     return count
 
 def main():
-    img    = ImageData(SAMPLE_FILE, 750)
+    img    = ImageData(SAMPLE_FILE, 50)
     dude   = img.getParams()
     xi, yi = getMatrixDicts(dude.seqs, dude.pixels)
     logging.debug('X Length: ' + str(len(xi)))
     logging.debug('Y Length: ' + str(len(yi)))
-    #Oh boy, this thing is huge. Use int8 for your matrix to save space. 
+    logging.debug('Size needed: ' + str(len(xi)*len(yi)*4) + ' bytes!')
+    logging.debug('Thats approx: ' + str((len(xi)*len(yi)*4*10**(-9))) + ' Gigabytes!')
     #Don't forget to check for overflow later!
-    mat = np.memmap(MAT_FILE, dtype='uint32', mode='w+', shape=(len(xi),len(yi)))
+    mat = np.memmap(MAT_FILE, dtype='uint16', mode='w+', shape=(len(xi),len(yi)))
     mat.flush()
     addValsToMatrix(mat, xi, yi, img)
     return
