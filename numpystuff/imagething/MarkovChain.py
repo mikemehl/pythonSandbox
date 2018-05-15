@@ -59,6 +59,7 @@ def addValsToMatrix(mat, xi, yi, img):
                     xindex = xi[seq]
                     yindex = yi[nxt]
                     if mat[xindex][yindex] < MAX_ENTRY:
+                        #logging.info('Incrementing ('+ str(xindex)+', '+str(yindex)+')')
                         mat[xindex][yindex] += 1
                     else:
                         logging.critical('MAX SIZE: ' + str(mat[xindex][yindex]))
