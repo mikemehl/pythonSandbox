@@ -10,6 +10,7 @@ import numpy as np
 from ImageData import ImageData
 from ImageData import UniqueVals
 from ImageData import SAMPLE_FILE
+from math import sqrt
 import logging
 import progressbar
 
@@ -74,6 +75,24 @@ def addValsToMatrix(mat, xi, yi, img):
         assert(False)
     return count
 
+#Distance between two sequences.
+#Flatten sequences and find euclidean distance.
+def metric(seq1, seq2):
+    try: 
+        assert(len(seq1) == len(seq2))
+        sub = [None]*len(seq1)
+        for i in range(0, len(seq1)):
+            sub[i] = (int(seq1[i]) - int(seq2[i]))
+        sub = [x**2 for x in sub]
+        return sqrt(sum(sub))
+    except:
+        print("Unable to determine metric.")
+        raise ValueError("Bad parameters passed to metric().")
+
+# Given input seed, find next pixel to place.
+def oneStep(seed, length, matrix):
+    return
+
 def main():
     img    = ImageData(SAMPLE_FILE, 200)
     dude   = img.getParams()
@@ -87,9 +106,9 @@ def main():
     logging.debug('X Length: ' + str(len(xi)))
     logging.debug('Y Length: ' + str(len(yi)))
     logging.debug('Size needed: ' + str(bneeded) + ' bytes, approximately ' + str(gneeded) + ' gigabytes.')
-    #Don't forget to check for overflow later!
     mat = np.memmap(MAT_FILE, dtype='uint8', mode='w+', shape=(len(xi),len(yi)))
     addValsToMatrix(mat, xi, yi, img)
+    print(metric(np.array([1,2,3]),np.array([4,5,6])))
     return
 if __name__ == "__main__":
     main()
