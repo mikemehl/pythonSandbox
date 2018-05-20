@@ -118,8 +118,10 @@ class MarkovMatrix:
            assert(len(seed) is self.length)
            if self.xi[seed] is not None:
                #Great! Use that value to determine probability.
+               pass
            else:
                #Find the closet value in the set
+               pass
            #Determine probabilities.
            #Flip a coin.
            #Return what should be next.
