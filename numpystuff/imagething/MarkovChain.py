@@ -110,7 +110,20 @@ class MarkovMatrix:
            raise ValueError("Bad parameters passed to metric().")
 
 # Given input seed, find next pixel to place.
-   def oneStep(seed, length, matrix):
+   def oneStep(self, seed):
+       try:
+           #Verify length of seed.
+           assert(len(seed) is img.length)
+           if seed in img.seqs:
+               #Great! Use that value to determine probability.
+           else:
+               #Find the closet value in the set
+           #Determine probabilities.
+           #Flip a coin.
+           #Return what should be next.
+       except:
+           logging.critical('oneStep failed.')
+           assert(False)
        return
 
 def main():
