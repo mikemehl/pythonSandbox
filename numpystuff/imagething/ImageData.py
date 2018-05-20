@@ -12,7 +12,7 @@ from collections import namedtuple
 
 
 SAMPLE_FILE = 'sample2.jpg'
-logging.basicConfig(format='%(asctime)s : %(levelname)6s : %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s : %(levelname)6s : %(message)s', level=logging.DEBUG, filename='logfile.log')
 UniqueVals = namedtuple('UniqueVals', 'pixels seqs seqlength')
 
 #Class for image operations and data
