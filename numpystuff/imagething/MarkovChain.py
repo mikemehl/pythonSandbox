@@ -20,6 +20,7 @@ MEM_LIMIT  = 15
 TYPE_SIZE = 1
 
 class MarkovMatrix:
+   #Later on, generalize this guy to work on a list of images!
    def __init__(self, img):
       assert(type(img) is ImageData)
       self.xi, self.yi = self.getMatrixDicts(img.seqs, img.values)
@@ -34,6 +35,7 @@ class MarkovMatrix:
       logging.debug('Size needed: ' + str(bneeded) + ' bytes, approximately ' + str(gneeded) + ' gigabytes.')
       self.mat = np.memmap(MAT_FILE, dtype='uint8', mode='w+', shape=(len(self.xi),len(self.yi)))
       self.addValsToMatrix(img)
+      self.length = img.length
       return
 
    def getMatrixDicts(self, xvals, yvals):
@@ -113,8 +115,8 @@ class MarkovMatrix:
    def oneStep(self, seed):
        try:
            #Verify length of seed.
-           assert(len(seed) is img.length)
-           if seed in img.seqs:
+           assert(len(seed) is self.length)
+           if self.xi[seed] is not None:
                #Great! Use that value to determine probability.
            else:
                #Find the closet value in the set
