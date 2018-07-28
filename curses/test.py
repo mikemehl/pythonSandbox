@@ -51,3 +51,39 @@ def initMap():
 
 if __name__ == '__main__':
     wrapper(main)
+
+#Class for holding info about the game world, including:
+#  * Map of the world
+#  * List of actors present in the world (i.e. player/monsters)
+#  * List of items in the world
+#  * Methods for interacting with the above items
+class GameWorld
+   def __init__(self):
+      self.worldMap = []
+      self.actorList = []
+      self.itemList = []
+
+#Super Class for representing an actor (i.e. player/monster) in the game world:
+#  *energy - for determining turns
+#  *hp - health points obviously
+#  *strength - basic combat damage stat
+#  *speed - basic combat evade stat
+class Actor
+   def __init__(self):
+      self.energy = 5
+      self.hp = 10
+      self.strength = 1
+      self.speed = 1
+
+#Class for representing the player's screen view
+class Screen
+   def __init__(self):
+      self.xl = 100
+      self.yl = 100
+      self.theScreen = [];
+
+#Class for managing the game 
+class DungeonMaster
+   def __init__(self):
+      self.world = GameWorld()
+      self.screen = Screen()
