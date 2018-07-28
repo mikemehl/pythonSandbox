@@ -13,7 +13,8 @@ class GameWorld:
    def __init__(self):
       self.dungeonMap = []
       self.actorMap = []
-      self.actorList = []
+      dude = Player()
+      self.actorList = [dude]
       self.itemList = []
       self.initMap()
 
@@ -32,6 +33,8 @@ class Screen:
       self.theScreen = stdscr
 
    def drawDungeon(self, amap):
+      #Clear the whole screen
+      self.theScreen.clear()
       #Draw the terrain
       for j in range(0, GameWorld.MAX_Y):
          self.theScreen.addstr(j, 0, amap[j][0])
@@ -58,8 +61,8 @@ class DungeonMaster:
       self.screen.drawOverlay(self.world.actorList)
       self.screen.drawOverlay(self.world.itemList)
       self.screen.refreshScreen()
-      time.sleep(5)
-   
+      self.gameLoop()
+
    def getInput(self):
       return self.screen.theScreen.getkey()
 
@@ -71,27 +74,50 @@ class DungeonMaster:
             #Call each ones action addEnergy method.
             actor.addEnergy()
             #If it's energy beats the threshold, it gets a turn.
-            if actors.energy > self.energyThreshold:
+            if actor.energy > self.energyThreshold:
                #If it's the player 
                if isinstance(actor, Player):
                   self.playerLoop(actor)
                #Call the actor's action method
-               actor.action(self.world)
+               actor.action(actor, self.world)
 
    def playerLoop(self, player):
       assert(isinstance(player, Player))
       #Update the screen 
       self.screen.drawDungeon(self.world.worldMap)
+      self.screen.drawOverlay(self.world.actorList)
+      self.screen.drawOverlay(self.world.itemList)
       self.screen.refreshScreen()
       inputCycle = True
       #Get user input 
       while inputCycle:
          key = self.getInput();
-         #Tell the Player to process the input 
-         inputCycle = actor.processInput(key) #on returning false, next action callback should be setup
+         #for now, just move the player
+         posx = player.pos[0]
+         posy = player.pos[1]
+         action = []
+         if key == 'w':
+            action = player.moveTo(posx, posy-1)
+         elif key == 's':
+            action = player.moveTo(posx, posy+1)
+         elif key == 'a':
+            action = player.moveTo(posx-1, posy)
+         elif key == 'd':
+            action = player.moveTo(posx+1, posy)
+         else:
+            assert(False)
+         player.action = action
+         inputCycle = False
+
+#Super Class for representing an entity(item or actor)
+#  *pos - position in dungeon
+#  *repr - character representation
+class Entity:
+   def __init__(self):
+      self.pos = [1,2,3]
+      self.repr = ' '
 
 #Super Class for representing an actor (i.e. player/monster) in the game world:
-#  *pos - (x,y,z) where z is dungeon depth
 #  *energy - for determining turns
 #  *hp - health points obviously
 #  *strength - basic combat damage stat
@@ -99,16 +125,28 @@ class DungeonMaster:
 #  *action - callback for what to do on a turn, takes 
 #     -GameWorld for updating
 #  *addEnergy - callback for how much energy to add
-class Actor:
+class Actor(Entity):
    def __init__(self):
-      self.pos = [1,2,3]
-      self.energy = 5
+      super().__init__()
+      self.energy = 7
       self.hp = 10
       self.strength = 1
       self.speed = 1
       self.action = lambda : None
       self.addEnergy = lambda : None 
 
+class Player(Actor):
+   def __init__(self):
+      super().__init__()
+      self.repr = '@'
+
+   def moveTo(self, x, y):
+      def moveMe(self, world):
+         self.pos[0] = x
+         self.pos[1] = y
+      return moveMe
+
+#Main program execution starts here
 def main(stdscr):
    DungeonMaster(stdscr)            
 
