@@ -1,6 +1,11 @@
 import time
+import logging
+import pdb
 import curses
 from curses import wrapper
+
+#setup global logging
+#logging.basicConfig(filename='runlog.txt', level=logging.DEBUG)
 
 #Class for holding info about the game world, including:
 #  * Map of the world
@@ -10,8 +15,9 @@ from curses import wrapper
 class GameWorld:
    MAX_X = 80
    MAX_Y = int(MAX_X / 4)
+   BLOCKING_CHARS = ['#'] #things that will block actors
    def __init__(self):
-      self.dungeonMap = []
+      self.worldMap = [['.']*GameWorld.MAX_Y]*GameWorld.MAX_X
       self.actorMap = []
       dude = Player()
       self.actorList = [dude]
@@ -19,11 +25,8 @@ class GameWorld:
       self.initMap()
 
    def initMap(self):
-     amap = [[' ']*GameWorld.MAX_X]*GameWorld.MAX_Y
      for i in range(0,GameWorld.MAX_X):
-             amap[0][i] = '#'
-     amap[5][6] = '*'
-     self.worldMap = amap 
+        self.worldMap[i][0] = '#'
 
 #Class for representing the player's screen view
 class Screen:
@@ -36,8 +39,9 @@ class Screen:
       #Clear the whole screen
       self.theScreen.clear()
       #Draw the terrain
-      for j in range(0, GameWorld.MAX_Y):
-         self.theScreen.addstr(j, 0, amap[j][0])
+      for x in range(0, GameWorld.MAX_X-1):
+         for y in range(0, GameWorld.MAX_Y-1):
+            self.theScreen.addstr(y, x, amap[x][y])
       return
 
    def drawOverlay(self, actors):
@@ -142,8 +146,10 @@ class Player(Actor):
 
    def moveTo(self, x, y):
       def moveMe(self, world):
-         self.pos[0] = x
-         self.pos[1] = y
+         spot = world.worldMap[x][y]
+         if not spot in GameWorld.BLOCKING_CHARS:
+            self.pos[0] = x
+            self.pos[1] = y
       return moveMe
 
 #Main program execution starts here
