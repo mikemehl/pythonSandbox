@@ -20,7 +20,7 @@ def main():
             month = int(line[1][4:6]);
             day   = int(line[1][6:8]);
             msg   = line[2];
-            cat   = line[3];
+            cat   = 'T';
             entry = GuestEntry(name=name, date=date(year, month, day), msg=msg, cat=cat);
             entry.save()
          except:
