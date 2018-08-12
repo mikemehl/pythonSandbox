@@ -1,7 +1,7 @@
 from peewee import *
 import csv
 import time
-from datetime import date
+from datetime import date, datetime
 from GuestEntry import *
 
 def main():
@@ -19,11 +19,18 @@ def main():
             year  = int(line[1][0:4]);
             month = int(line[1][4:6]);
             day   = int(line[1][6:8]);
+            hour = int(0);
+            minute = int(0);
+            second = int(0);
             msg   = line[2];
             cat   = 'T';
-            entry = GuestEntry(name=name, date=date(year, month, day), msg=msg, cat=cat);
+            entry = GuestEntry(name=name, \
+                               date=datetime(year, month, day, hour, minute, second),\
+                               msg=msg,\
+                               cat=cat);
             entry.save()
-         except:
+         except Exception as e:
+            print(e);
             continue
    for entry in GuestEntry.select():
       print('Name: %5s\t Date: %s' % (entry.name, entry.date));

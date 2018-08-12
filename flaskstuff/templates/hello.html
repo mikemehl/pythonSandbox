@@ -5,7 +5,7 @@
 <hr>
 
 <h2>Sign the guestbook...</h2>
-<form method="POST" action='/'>
+<form method="POST"> 
 {{ form.csrf_token }}
 {{ form.name.label }} {{ form.name }}
 <br>
@@ -29,7 +29,7 @@
 
 <hr>
 <h2>Guestbook entries:</h2>
-{% for name in names %}
-<p>{{ name }}</p>
+{% for entry in entries %}
+<p><b>{{ entry.name }}</b> | {{ entry.date }}</p>
 {% endfor %}
 </html>

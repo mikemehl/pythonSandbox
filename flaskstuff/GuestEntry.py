@@ -4,7 +4,7 @@ db = SqliteDatabase('example.db');
 
 class GuestEntry(Model):
    name = CharField();
-   date = DateField();
+   date = DateTimeField();
    msg  = CharField();
    cat  = CharField();
 
