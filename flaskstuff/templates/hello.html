@@ -5,7 +5,8 @@
 <hr>
 
 <h2>Sign the guestbook...</h2>
-<form method="post">
+<form method="POST" action='/'>
+{{ form.csrf_token }}
 {{ form.name.label }} {{ form.name }}
 <br>
 {{ form.msg.label }} {{ form.msg }}
@@ -18,6 +19,13 @@
 <br>
 {{ form.submit }}
 </form>
+{% with messages = get_flashed_messages() %}
+   {% if messages %}
+   {% for message in messages %}
+      {{ message }}
+   {% endfor %}
+   {% endif %}
+{% endwith %}
 
 <hr>
 <h2>Guestbook entries:</h2>
