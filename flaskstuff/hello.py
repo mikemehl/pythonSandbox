@@ -15,7 +15,7 @@ if not db.connect(): assert(False);
 def sign_guestbook(form):
    now = datetime.datetime.now();
    if form.errors:
-      flash('There was an error validating the form. Did you fill out all fields?');
+      flash('An error occured.');
       return False; 
    else:
        try:
@@ -45,6 +45,8 @@ def guestbook():
       if form.validate_on_submit():
          if sign_guestbook(form):
             return redirect(url_for('guestbook'));
+      else:
+         flash('There was an error validating the form. Did you fill out all fields?');
    return render_template('hello.html', entries=entries, form=form);
 
 if __name__ == '__main__':

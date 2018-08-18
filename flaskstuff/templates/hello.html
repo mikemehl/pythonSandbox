@@ -1,35 +1,66 @@
 <! doctype html>
 <html>
-<title>Hello world...</title>
-<h1>Guestbook</h1>
-<hr>
+<head>
+<title>Apartment 1808 Guestbook</title>
+<link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v3.0.0/dist/mini-default.min.css">
+<style>
+.container {
+   max-width: 720px;        
+   background-color: #FEFEFE;
+}
 
+body {
+   background: url("{{url_for('static', filename='bananas.png')}}");        
+   background-repeat: repeat;
+}
+
+.guestentry {
+   padding: 5px;        
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Apartment 1808 Guestbook</h1>
 <h2>Sign the guestbook...</h2>
 <form method="POST"> 
 {{ form.csrf_token }}
-{{ form.name.label }} {{ form.name }}
+{{ form.name.label }}<br> {{ form.name(rows='1', cols='50') }}
 <br>
-{{ form.msg.label }} {{ form.msg }}
+{{ form.msg.label }}<br> {{ form.msg(rows='10', cols='50') }}
 <br>
 {{ form.cat.label }}
 <br>
 {% for acat in form.cat %}
-{{ acat.label }} {{ acat }} 
+{{ acat }} {{ acat.label }}<br> 
 {% endfor %}
 <br>
 {{ form.submit }}
 </form>
 {% with messages = get_flashed_messages() %}
    {% if messages %}
+<div class="card warning" width=100%>
    {% for message in messages %}
-      {{ message }}
+   {{ message }}
    {% endfor %}
+</div>
    {% endif %}
 {% endwith %}
-
-<hr>
 <h2>Guestbook entries:</h2>
+<hr>
+{% if entries %}
 {% for entry in entries %}
-<p><b>{{ entry.name }}</b> | {{ entry.date }}</p>
+<div class="guestentry">
+<p><b>{{ entry.name }}</b> @ {{ entry.date }}</p>
+<p>{{ entry.msg }}</p>
+</div>
+<hr style="width: 20%">
 {% endfor %}
+{% else %}
+<h3>No guestbook entries yet!</h3>
+{% endif %}
+</div>
+</div>
+</body>
 </html>
