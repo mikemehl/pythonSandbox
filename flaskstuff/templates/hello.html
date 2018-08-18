@@ -18,11 +18,17 @@ body {
    padding: 5px;        
 }
 
+h1 {
+   margin: 10px;        
+   text-align: center;
+   font-size: 48px;
+}
 </style>
 </head>
 <body>
 <div class="container">
 <h1>Apartment 1808 Guestbook</h1>
+<hr >
 <h2>Sign the guestbook...</h2>
 <form method="POST"> 
 {{ form.csrf_token }}
@@ -48,7 +54,7 @@ body {
    {% endif %}
 {% endwith %}
 <h2>Guestbook entries:</h2>
-<hr>
+<br>
 {% if entries %}
 {% for entry in entries %}
 <div class="guestentry">
